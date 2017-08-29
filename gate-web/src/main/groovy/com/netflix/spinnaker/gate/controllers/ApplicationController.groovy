@@ -19,6 +19,7 @@ package com.netflix.spinnaker.gate.controllers
 import com.netflix.spinnaker.gate.services.ApplicationService
 import com.netflix.spinnaker.gate.services.ExecutionHistoryService
 import com.netflix.spinnaker.gate.services.TaskService
+import com.netflix.spinnaker.gate.services.internal.OrcaService
 import com.netflix.spinnaker.kork.web.exceptions.NotFoundException
 import groovy.util.logging.Slf4j
 import io.swagger.annotations.ApiOperation
@@ -49,6 +50,9 @@ class ApplicationController {
 
   @Autowired
   TaskService taskService
+
+  @Autowired
+  OrcaService orcaService
 
   @Autowired
   PipelineController pipelineController
@@ -154,6 +158,15 @@ class ApplicationController {
     applicationService.getStrategyConfigsForApplication(application).find {
       it.name == strategyName
     }
+  }
+
+  @ApiOperation(value = "Evaluates an expression")
+  @RequestMapping(value = "/{application}/pipelineConfigs/{pipelineConfigId}/evaluateExpression")
+  Map evaluateExpression(@PathVariable("application") String application,
+                         @PathVariable("pipelineConfigId") String pipelineConfigId,
+                         @RequestParam(value = "executionId", required = false) String executionId,
+                         @RequestParam("expression") String expression) {
+    orcaService.evaluateExpression(application, pipelineConfigId, executionId, expression)
   }
 
   /**
